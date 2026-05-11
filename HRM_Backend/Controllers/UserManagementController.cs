@@ -1,4 +1,6 @@
-﻿using LMS.Model;
+﻿using HRM_Backend.Common;
+using HRM_Backend.Model;
+using HRM_Backend.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -6,16 +8,20 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace LMS.Controllers
+namespace HRM_Backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class UserManagementController : Controller
     {
+        private readonly IUserService _userService;
+        private readonly IRoleService _roleService;
         private readonly IConfiguration _config;
-
-        public UserManagementController(IConfiguration config)
+        HashPassword hashPassword = new HashPassword();
+        public UserManagementController(IUserService userService, IRoleService roleService, IConfiguration config)
         {
+            _userService = userService;
+            _roleService = roleService;
             _config = config;
         }
         string GenerateJwtToken(string username)
@@ -50,7 +56,25 @@ namespace LMS.Controllers
         public async Task<IActionResult> Login(Login user)
         {
             bool Success = false;
-            if (user.Username == "admin" && user.Password == "1234")
+
+            var objAdmin = (await _userService.GetAllAsync()).Where(x => x.Username == user.Username && x.Password == user.Password).FirstOrDefault();
+            var obj = (await _userService.GetAllAsync()).Where(x=>x.Username == user.Username && x.Password== hashPassword.Encode(user.Password)).FirstOrDefault();
+
+
+            if (objAdmin != null)
+            {
+                Success = true;
+
+                var token = GenerateJwtToken(user.Username);
+
+                return Ok(new
+                {
+                    Success,
+                    userName = user.Username,
+                    token
+                });
+            }
+            else if (obj != null)
             {
                 Success = true;
 
@@ -71,6 +95,69 @@ namespace LMS.Controllers
                     Message = "Please Enter Valid User Info!"
                 });
             }
+        }
+
+        
+        [HttpGet("GetAllRoles")]
+        public async Task<IActionResult> GetAllRoles()
+        {
+            var list = await _roleService.GetAllAsync();
+
+            return Ok(list);
+        }
+
+        [Authorize]
+        [HttpGet("GetAllUsers")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var list = await _userService.GetAllAsync();
+
+            return Ok(list);
+        }
+
+        [Authorize]
+        [HttpGet("GetUserById/{id}")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            var list = await _userService.GetByIdAsync(id);
+
+            return Ok(list);
+        }
+
+
+        [HttpPost("AddUser")]
+        public async Task<IActionResult> AddUser(User obj)
+        {
+            await _userService.AddAsync(obj);
+
+            return Ok(new
+            {
+                Message = "User created successfully."
+            });
+        }
+
+        [Authorize]
+        [HttpPut("UpdateUser")]
+        public async Task<IActionResult> UpdateUser(User obj)
+        {
+            await _userService.UpdateAsync(obj);
+
+            return Ok(new
+            {
+                Message = "User updated successfully."
+            });
+        }
+
+        [Authorize]
+        [HttpDelete("DeleteUser/{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            await _userService.DeleteAsync(id);
+
+            return Ok(new
+            {
+                Message = "User deleted successfully."
+            });
         }
     }
 }

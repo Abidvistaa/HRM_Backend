@@ -96,6 +96,8 @@ builder.Services.AddDbContext<AppDBContext>(options =>
 
 // Repository & Services 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 

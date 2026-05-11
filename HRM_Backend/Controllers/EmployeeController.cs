@@ -15,25 +15,28 @@ namespace HRM_Backend.Controllers
         {
             _employeeService = employeeService;
         }
-        [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+
+
+        [HttpGet("GetAllEmployees")]
+        public async Task<IActionResult> GetAllEmployees()
         {
             var list = await _employeeService.GetAllAsync();
 
             return Ok(list);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [Authorize]
+        [HttpGet("GetEmployeeById/{id}")]
+        public async Task<IActionResult> GetEmployeeById(int id)
         {
             var employee = await _employeeService.GetByIdAsync(id);
 
             return Ok(employee);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Add(Employee employee)
+        [Authorize]
+        [HttpPost("AddEmployee")]
+        public async Task<IActionResult> AddEmployee(Employee employee)
         {
             await _employeeService.AddAsync(employee);
 
@@ -43,8 +46,9 @@ namespace HRM_Backend.Controllers
             });
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Employee employee)
+        [Authorize]
+        [HttpPut("UpdateEmployee")]
+        public async Task<IActionResult> UpdateEmployee(Employee employee)
         {
             await _employeeService.UpdateAsync(employee);
 
@@ -54,8 +58,9 @@ namespace HRM_Backend.Controllers
             });
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [Authorize]
+        [HttpDelete("DeleteEmployee/{id}")]
+        public async Task<IActionResult> DeleteEmployee(int id)
         {
             await _employeeService.DeleteAsync(id);
 
