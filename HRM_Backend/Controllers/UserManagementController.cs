@@ -57,20 +57,20 @@ namespace HRM_Backend.Controllers
         {
             bool Success = false;
 
-            var objAdmin = (await _userService.GetAllAsync()).Where(x => x.Username == user.Username && x.Password == user.Password).FirstOrDefault();
-            var obj = (await _userService.GetAllAsync()).Where(x=>x.Username == user.Username && x.Password== hashPassword.Encode(user.Password)).FirstOrDefault();
+            var objAdmin = (await _userService.GetAllAsync()).Where(x => x.UserName == user.UserName && x.Password == user.Password).FirstOrDefault();
+            var obj = (await _userService.GetAllAsync()).Where(x=>x.UserName == user.UserName && x.Password== hashPassword.Encode(user.Password)).FirstOrDefault();
 
 
             if (objAdmin != null)
             {
                 Success = true;
 
-                var token = GenerateJwtToken(user.Username);
+                var token = GenerateJwtToken(user.UserName);
 
                 return Ok(new
                 {
                     Success,
-                    userName = user.Username,
+                    userName = user.UserName,
                     token
                 });
             }
@@ -78,12 +78,12 @@ namespace HRM_Backend.Controllers
             {
                 Success = true;
 
-                var token = GenerateJwtToken(user.Username);
+                var token = GenerateJwtToken(user.UserName);
 
                 return Ok(new
                 {
                     Success,
-                    userName = user.Username,
+                    userName = user.UserName,
                     token
                 });
             }
@@ -111,6 +111,15 @@ namespace HRM_Backend.Controllers
         public async Task<IActionResult> GetAllUsers()
         {
             var list = await _userService.GetAllAsync();
+
+            return Ok(list);
+        }
+
+        [Authorize]
+        [HttpGet("GetAllUsersWithRoles")]
+        public async Task<IActionResult> GetAllUsersWithRoles()
+        {
+            var list = await _userService.GetUsersWithRolesAsync();
 
             return Ok(list);
         }

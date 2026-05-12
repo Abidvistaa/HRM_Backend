@@ -51,12 +51,17 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // Controllers & JSON 
+//builder.Services.AddControllers()
+//    .AddJsonOptions(options =>
+//    {
+//        options.JsonSerializerOptions.PropertyNamingPolicy = null; // Keep PascalCase
+//    });
+// Controllers & JSON 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.PropertyNamingPolicy = null; // Keep PascalCase
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     });
-
 // Swagger 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

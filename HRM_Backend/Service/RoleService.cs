@@ -21,7 +21,7 @@ namespace HRM_Backend.Service
         {
             try
             {
-                var list = await _roleRepository.GetAllAsync();
+                var list = (await _roleRepository.GetAllAsync()).Where(x=>x.RoleName != "Admin");
 
                 return list;
             }

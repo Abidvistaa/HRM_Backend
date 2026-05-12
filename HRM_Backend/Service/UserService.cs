@@ -1,4 +1,5 @@
 ﻿using HRM_Backend.Common;
+using HRM_Backend.DTO;
 using HRM_Backend.Model;
 using HRM_Backend.Repository;
 
@@ -11,6 +12,7 @@ namespace HRM_Backend.Service
         Task AddAsync(User obj);
         Task UpdateAsync(User obj);
         Task DeleteAsync(int id);
+        Task<IEnumerable<UserDTO>> GetUsersWithRolesAsync();
     }
 
     public class UserService : IUserService
@@ -23,7 +25,6 @@ namespace HRM_Backend.Service
             _userRepository = userRepository;
             _roleRepository = roleRepository;
         }
-
         public async Task<IEnumerable<User>> GetAllAsync()
         {
             try
@@ -81,7 +82,7 @@ namespace HRM_Backend.Service
                 if (user == null)
                     throw new KeyNotFoundException($"User with ID {obj.Id} not found.");
 
-                user.Username = obj.Username;
+                user.UserName = obj.UserName;
                 user.Password = hashpassword.Encode(obj.Password);
                 user.RoleId = obj.RoleId;
                 user.ActionDate = DateTime.Now;
@@ -119,5 +120,29 @@ namespace HRM_Backend.Service
             }
         }
 
+        public async Task<IEnumerable<UserDTO>> GetUsersWithRolesAsync()
+        {
+            try
+            {
+                var users = await _userRepository.GetAllAsync();
+
+                var roles = await _roleRepository.GetAllAsync();
+
+                var userList = users.Select(user => new UserDTO
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    RoleId = user.RoleId,
+                    RoleName = roles.FirstOrDefault(r => r.Id == user.RoleId)?.RoleName ?? "",
+                    ActionDate = user.ActionDate
+                });
+
+                return userList;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to retrieve user list.", ex);
+            }
+        }
     }
 }
