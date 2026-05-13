@@ -44,7 +44,7 @@ namespace HRM_Backend.Controllers
                 issuer: "HRM",
                 audience: "HRM",
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(24),
+                expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

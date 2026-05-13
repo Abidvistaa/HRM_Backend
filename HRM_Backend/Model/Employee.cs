@@ -14,12 +14,10 @@ namespace HRM_Backend.Model
         [Required]
         public string Department { get; set; } = string.Empty;
         [Required]
-        public string Position { get; set; } = string.Empty;
-        [Required]
         public string AccountNumber { get; set; } = string.Empty;
         [Required]
         public string EmploymentStatus { get; set; } = string.Empty;
-        [Required]
+ 
         public DateTime HireDate { get; set; }
     }
 }

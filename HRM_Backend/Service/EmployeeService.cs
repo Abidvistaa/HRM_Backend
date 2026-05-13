@@ -8,7 +8,7 @@ namespace HRM_Backend.Service
         Task<IEnumerable<Employee>> GetAllAsync();
         Task<Employee> GetByIdAsync(int id);
         Task AddAsync(Employee obj);
-        Task UpdateAsync(Employee obj);
+        Task UpdateAsync(int id, Employee obj);
         Task DeleteAsync(int id);
     }
 
@@ -26,7 +26,7 @@ namespace HRM_Backend.Service
             {
                 var list = await _employeeRepository.GetAllAsync();
 
-                return list;
+                return list.OrderByDescending(x=>x.Id);
             }
             catch (Exception ex)
             {
@@ -68,11 +68,11 @@ namespace HRM_Backend.Service
             }
         }
 
-        public async Task UpdateAsync(Employee model)
+        public async Task UpdateAsync(int id, Employee model)
         {
             try
             {
-                var employee = await _employeeRepository.GetByIdAsync(model.Id);
+                var employee = await _employeeRepository.GetByIdAsync(id);
 
                 if (employee == null)
                     throw new KeyNotFoundException($"Employee with ID {model.Id} not found.");
@@ -80,11 +80,8 @@ namespace HRM_Backend.Service
                 employee.Name = model.Name;
                 employee.Email = model.Email;
                 employee.Phone = model.Phone;
-                employee.Department = model.Department;
-                employee.Position = model.Position;
                 employee.AccountNumber = model.AccountNumber;
                 employee.EmploymentStatus = model.EmploymentStatus;
-                employee.HireDate = model.HireDate;
 
                 await _employeeRepository.UpdateAsync(employee);
             }

@@ -47,10 +47,10 @@ namespace HRM_Backend.Controllers
         }
 
         [Authorize]
-        [HttpPut("UpdateEmployee")]
-        public async Task<IActionResult> UpdateEmployee(Employee employee)
+        [HttpPut("UpdateEmployee/{id}")]
+        public async Task<IActionResult> UpdateEmployee(int id,Employee employee)
         {
-            await _employeeService.UpdateAsync(employee);
+            await _employeeService.UpdateAsync(id, employee);
 
             return Ok(new
             {

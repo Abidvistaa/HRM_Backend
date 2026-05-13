@@ -51,12 +51,6 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // Controllers & JSON 
-//builder.Services.AddControllers()
-//    .AddJsonOptions(options =>
-//    {
-//        options.JsonSerializerOptions.PropertyNamingPolicy = null; // Keep PascalCase
-//    });
-// Controllers & JSON 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
