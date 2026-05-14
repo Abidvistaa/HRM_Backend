@@ -5,6 +5,7 @@ namespace HRM_Backend.DTO
     {
         public int Id { get; set; }
         public int EmployeeId { get; set; }
+        public string IdPlusName { get; set; } = string.Empty;
         public string EmployeeName { get; set; } = string.Empty;
         public decimal BasicSalary { get; set; }
         public DateTime EffectiveDate { get; set; }

@@ -14,7 +14,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular",
         policy => policy
-            .WithOrigins("http://localhost:4200")
+            .WithOrigins("http://localhost:64493")
             .AllowAnyHeader()
             .AllowAnyMethod()
     );
@@ -101,6 +101,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<ISalaryService, SalaryService>();
+builder.Services.AddScoped<IPayrollService, PayrollService>();
 
 var app = builder.Build();
 

@@ -10,5 +10,6 @@ namespace HRM_Backend
         public DbSet<Role> Roles { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Salary> Salaries { get; set; }
+        public DbSet<Payroll> Payrolls { get; set; }
     }
 }

@@ -18,7 +18,7 @@ namespace HRM_Backend.Controllers
 
 
         [HttpGet("GetAllSalaries")]
-        public async Task<IActionResult> GetAllSalarys()
+        public async Task<IActionResult> GetAllSalaries()
         {
             var list = await _salaryService.GetAllAsync();
 
@@ -68,6 +68,15 @@ namespace HRM_Backend.Controllers
             {
                 Message = "Salary deleted successfully."
             });
+        }
+
+        [Authorize]
+        [HttpGet("GetUpdatedSalaryList")]
+        public async Task<IActionResult> GetUpdatedSalaryList()
+        {
+            var list = await _salaryService.GetUpdatedSalaryListAsync();
+
+            return Ok(list);
         }
     }
 }

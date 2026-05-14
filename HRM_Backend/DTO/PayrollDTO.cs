@@ -1,24 +1,23 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System.ComponentModel.DataAnnotations;
 
-namespace HRM_Backend.Model
+namespace HRM_Backend.DTO
 {
-    public class Payroll
+    public class PayrollDTO
     {
         public int Id { get; set; }
-        [Required]
+        public int SalaryId { get; set; }
         public int EmployeeId { get; set; }
-        [Required]
+        public string EmployeeName { get; set; } = string.Empty;
         public int PayrollMonth { get; set; }
-        [Required]
+        public string PayrollMonthString { get; set; } = string.Empty;
         public int PayrollYear { get; set; }
+        public decimal BasicSalary { get; set; }
         public decimal Bonus { get; set; }
         public decimal Deduction { get; set; }
-        [Required]
         public decimal Tax { get; set; }
-        [Required]
         public decimal NetSalary { get; set; }
-        public string Status {  get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
         public DateTime ActionDate { get; set; }
-
     }
 }

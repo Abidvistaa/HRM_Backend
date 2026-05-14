@@ -12,6 +12,7 @@ namespace HRM_Backend.Service
         Task AddAsync(Salary obj);
         Task UpdateAsync(int id, Salary obj);
         Task DeleteAsync(int id);
+        Task<IEnumerable<SalaryDTO>> GetUpdatedSalaryListAsync();
     }
 
     public class SalaryService : ISalaryService
@@ -31,13 +32,19 @@ namespace HRM_Backend.Service
                 var salaries = await _salaryRepository.GetAllAsync();
                 var employees = await _employeeRepository.GetAllAsync();
 
-                var list = salaries.Select(obj => new SalaryDTO
+                var list = salaries.Select(obj =>
                 {
-                    Id = obj.Id,
-                    EmployeeId = obj.EmployeeId,
-                    EmployeeName = employees.FirstOrDefault(x => x.Id == obj.EmployeeId)?.Name?? "",
-                    BasicSalary = obj.BasicSalary,
-                    EffectiveDate = obj.EffectiveDate
+                    var employee = employees.FirstOrDefault(x => x.Id == obj.EmployeeId);
+
+                     return new SalaryDTO
+                     {
+                         Id = obj.Id,
+                         EmployeeId = obj.EmployeeId,
+                         EmployeeName = employee?.Name ?? "",
+                         BasicSalary = obj.BasicSalary,
+                         EffectiveDate = obj.EffectiveDate
+                     };
+
                 });
 
                 return list.OrderByDescending(x=>x.EffectiveDate);
@@ -125,6 +132,39 @@ namespace HRM_Backend.Service
             catch (Exception ex)
             {
                 throw new Exception("An error occurred while deleting salary.", ex);
+            }
+        }
+        public async Task<IEnumerable<SalaryDTO>> GetUpdatedSalaryListAsync()
+        {
+            try
+            {
+                var salaries = await _salaryRepository.GetAllAsync();
+                var employees = await _employeeRepository.GetAllAsync();
+
+                var latestSalaries = salaries
+                    .GroupBy(x => x.EmployeeId)
+                    .Select(g => g.OrderByDescending(x => x.EffectiveDate).FirstOrDefault());
+
+                var list = latestSalaries.Select(obj =>
+                {
+                    var employee = employees.FirstOrDefault(x => x.Id == obj.EmployeeId);
+
+                    return new SalaryDTO
+                    {
+                        Id = obj.Id,
+                        EmployeeId = obj.EmployeeId,
+                        IdPlusName = employee.Id + " - " + employee.Name,
+                        EmployeeName = employee?.Name ?? "",
+                        BasicSalary = obj.BasicSalary,
+                        EffectiveDate = obj.EffectiveDate
+                    };
+                });
+
+                return list.OrderByDescending(x => x.EffectiveDate);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to retrieve salary list.", ex);
             }
         }
 
