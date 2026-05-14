@@ -24,7 +24,7 @@ namespace HRM_Backend.Controllers
             _roleService = roleService;
             _config = config;
         }
-        string GenerateJwtToken(string username)
+        string GenerateJwtToken(string username, string role)
         {
             var jwt = _config.GetSection("Jwt");
 
@@ -37,7 +37,8 @@ namespace HRM_Backend.Controllers
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, username)
+                new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.Role, role)
             };
 
             var token = new JwtSecurityToken(
@@ -60,17 +61,19 @@ namespace HRM_Backend.Controllers
             var objAdmin = (await _userService.GetAllAsync()).Where(x => x.UserName == user.UserName && x.Password == user.Password).FirstOrDefault();
             var obj = (await _userService.GetAllAsync()).Where(x=>x.UserName == user.UserName && x.Password== hashPassword.Encode(user.Password)).FirstOrDefault();
 
-
             if (objAdmin != null)
             {
                 Success = true;
 
-                var token = GenerateJwtToken(user.UserName);
+                var role = await _roleService.GetByIdAsync(objAdmin.RoleId);
+
+                var token = GenerateJwtToken(user.UserName, role.RoleName);
 
                 return Ok(new
                 {
                     Success,
                     userName = user.UserName,
+                    roleName = role.RoleName,
                     token
                 });
             }
@@ -78,12 +81,15 @@ namespace HRM_Backend.Controllers
             {
                 Success = true;
 
-                var token = GenerateJwtToken(user.UserName);
+                var role = await _roleService.GetByIdAsync(obj.RoleId);
+
+                var token = GenerateJwtToken(user.UserName, role.RoleName);
 
                 return Ok(new
                 {
                     Success,
                     userName = user.UserName,
+                    roleName = role.RoleName,
                     token
                 });
             }

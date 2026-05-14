@@ -34,7 +34,7 @@ namespace HRM_Backend.Controllers
             return Ok(employee);
         }
 
-        [Authorize]
+        [Authorize(Roles = "HR")]
         [HttpPost("AddEmployee")]
         public async Task<IActionResult> AddEmployee(Employee employee)
         {
@@ -46,7 +46,7 @@ namespace HRM_Backend.Controllers
             });
         }
 
-        [Authorize]
+        [Authorize(Roles = "HR")]
         [HttpPut("UpdateEmployee/{id}")]
         public async Task<IActionResult> UpdateEmployee(int id,Employee employee)
         {

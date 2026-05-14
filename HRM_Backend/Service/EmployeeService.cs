@@ -1,11 +1,12 @@
-﻿using HRM_Backend.Model;
+﻿using HRM_Backend.DTO;
+using HRM_Backend.Model;
 using HRM_Backend.Repository;
 
 namespace HRM_Backend.Service
 {
     public interface IEmployeeService
     {
-        Task<IEnumerable<Employee>> GetAllAsync();
+        Task<IEnumerable<EmployeeDTO>> GetAllAsync();
         Task<Employee> GetByIdAsync(int id);
         Task AddAsync(Employee obj);
         Task UpdateAsync(int id, Employee obj);
@@ -20,13 +21,26 @@ namespace HRM_Backend.Service
             _employeeRepository = employeeRepository;
         }
 
-        public async Task<IEnumerable<Employee>> GetAllAsync()
+        public async Task<IEnumerable<EmployeeDTO>> GetAllAsync()
         {
             try
             {
                 var list = await _employeeRepository.GetAllAsync();
 
-                return list.OrderByDescending(x=>x.Id);
+                return list
+                    .OrderByDescending(x => x.Id)
+                    .Select(x => new EmployeeDTO
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        IdPlusName = x.Id + " - " + x.Name,
+                        Email = x.Email,
+                        Phone = x.Phone,
+                        Department = x.Department,
+                        AccountNumber = x.AccountNumber,
+                        EmploymentStatus = x.EmploymentStatus,
+                        HireDate = x.HireDate
+                    });
             }
             catch (Exception ex)
             {
