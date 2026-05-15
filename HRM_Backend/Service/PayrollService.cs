@@ -13,6 +13,7 @@ namespace HRM_Backend.Service
         Task DeleteAsync(int id);
         Task<IEnumerable<PayrollDTO>> GetAllDTOAsync();
         Task<PayrollDTO> GetByIdDTOAsync(int id);
+        Task<int> GenerateMonthlyPayrollAsync(Payroll obj);
     }
 
     public class PayrollService : IPayrollService
@@ -210,6 +211,101 @@ namespace HRM_Backend.Service
             {
                 throw new Exception("Failed to retrieve payroll DTO.", ex);
             }
+        }
+
+        public async Task<int> GenerateMonthlyPayrollAsync(Payroll model)
+        {
+            try
+            {
+                var employees = await _employeeRepository.GetAllAsync();
+                var salaries = await _salaryRepository.GetAllAsync();
+                var payrolls = await _payrollRepository.GetAllAsync();
+
+                int generatedCount = 0;
+
+                foreach (var employee in employees)
+                {
+                    // already generated?
+                    bool exists = payrolls.Any(x =>
+                        x.EmployeeId == employee.Id &&
+                        x.PayrollMonth == model.PayrollMonth &&
+                        x.PayrollYear == model.PayrollYear);
+
+                    if (exists)
+                        continue; //skip for that employee
+
+                    // latest salary
+                    var salary = salaries
+                        .Where(x => x.EmployeeId == employee.Id)
+                        .OrderByDescending(x => x.EffectiveDate)
+                        .FirstOrDefault();
+
+                    if (salary == null)
+                        continue;
+
+                    decimal basicSalary = salary.BasicSalary;
+
+                    // gross salary
+                    decimal grossSalary = basicSalary + model.Bonus - model.Deduction;
+
+                    // tax from rule
+                    decimal taxAmount = CalculateTax(grossSalary);
+
+                    // net salary
+                    decimal netSalary = grossSalary - taxAmount;
+
+                    var payroll = new Payroll
+                    {
+                        EmployeeId = employee.Id,
+                        PayrollMonth = model.PayrollMonth,
+                        PayrollYear = model.PayrollYear,
+                        Bonus = model.Bonus,
+                        Deduction = model.Deduction,
+                        Tax = taxAmount,
+                        NetSalary = netSalary,
+                        Status = "Generated",
+                        ActionDate = DateTime.Now
+                    };
+
+                    await _payrollRepository.AddAsync(payroll);
+
+                    generatedCount++;
+                }
+
+                return generatedCount;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to generate payroll.", ex);
+            }
+        }
+
+        private decimal CalculateTax(decimal grossSalary)
+        {
+            decimal taxPercent = 0;
+
+            // yearly estimation
+            decimal yearlySalary = grossSalary * 12;
+
+            // estimated tax rules
+            if (yearlySalary <= 300000)
+            {
+                taxPercent = 0;
+            }
+            else if (yearlySalary <= 600000)
+            {
+                taxPercent = 5;
+            }
+            else if (yearlySalary <= 1000000)
+            {
+                taxPercent = 10;
+            }
+            else
+            {
+                taxPercent = 15;
+            }
+
+            return (grossSalary * taxPercent) / 100;
         }
 
     }

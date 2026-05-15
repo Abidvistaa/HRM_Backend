@@ -86,5 +86,28 @@ namespace HRM_Backend.Controllers
                 Message = "Payroll deleted successfully."
             });
         }
+
+        [HttpPost("AutoGeneratePayrollMonthly")]
+        public async Task<IActionResult> AutoGeneratePayrollMonthly(Payroll payroll)
+        {
+            int generatedCount = await _payrollService.GenerateMonthlyPayrollAsync(payroll);
+            
+            if(generatedCount == 0)
+            {
+                return Ok(new
+                {
+                    Success = false,
+                    Message = $"{generatedCount} payrolls. So, no payroll has been generated.",
+                    GeneratedCount = generatedCount
+                });
+            }
+
+            return Ok(new
+            {
+                Success = true,
+                Message = $"{generatedCount} payrolls generated successfully.",
+                GeneratedCount = generatedCount
+            });
+        }
     }
 }
