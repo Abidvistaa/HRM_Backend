@@ -17,11 +17,13 @@ namespace HRM_Backend.Service
     public class EmployeeService : IEmployeeService
     {
         private readonly IRepository<Employee> _employeeRepository;
+        private readonly IRepository<Salary> _salaryRepository;
         private readonly IRepository<Payroll> _payrollRepository;
-        public EmployeeService(IRepository<Employee> employeeRepository, IRepository<Payroll> payrollRepository)
+        public EmployeeService(IRepository<Employee> employeeRepository, IRepository<Payroll> payrollRepository, IRepository<Salary> salaryRepository)
         {
             _employeeRepository = employeeRepository;
             _payrollRepository = payrollRepository;
+            _salaryRepository = salaryRepository;
         }
         public async Task<IEnumerable<Employee>> GetAllAsync()
         {
@@ -104,15 +106,24 @@ namespace HRM_Backend.Service
             try
             {
                 var employee = await _employeeRepository.GetByIdAsync(id);
-
+                var salaries = await _salaryRepository.GetAllAsync();
                 var payrolls = await _payrollRepository.GetAllAsync();
 
+                bool isPresentInSalary = salaries.Any(x => x.EmployeeId == employee.Id);
+
                 bool isPresentInPayroll = payrolls.Any(x => x.EmployeeId == employee.Id);
+
+                if (isPresentInSalary)
+                {
+                    throw new InvalidOperationException(
+                        $"This employee is already used in Salaries, it cannot be modified."
+                    );
+                }
 
                 if (isPresentInPayroll)
                 {
                     throw new InvalidOperationException(
-                        $"This employee is already used in Payroll, it cannot be updated."
+                        $"This employee is already used in Payroll, it cannot be modified."
                     );
                 }
 
@@ -148,10 +159,19 @@ namespace HRM_Backend.Service
             {
 
                 var employee = await _employeeRepository.GetByIdAsync(id);
-
+                var salaries = await _salaryRepository.GetAllAsync();
                 var payrolls = await _payrollRepository.GetAllAsync();
 
+                bool isPresentInSalary = salaries.Any(x => x.EmployeeId == employee.Id);
+
                 bool isPresentInPayroll = payrolls.Any(x => x.EmployeeId == employee.Id);
+
+                if (isPresentInSalary)
+                {
+                    throw new InvalidOperationException(
+                        $"This employee is already used in Salaries, it cannot be deleted."
+                    );
+                }
 
                 if (isPresentInPayroll)
                 {

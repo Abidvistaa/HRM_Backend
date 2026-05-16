@@ -105,7 +105,7 @@ namespace HRM_Backend.Service
                 if (isPresentInPayroll)
                 {
                     throw new InvalidOperationException(
-                        $"This salary is already used in Payroll, it cannot be updated."
+                        $"This salary is already used in Payroll, it cannot be modified."
                     );
                 }
 
