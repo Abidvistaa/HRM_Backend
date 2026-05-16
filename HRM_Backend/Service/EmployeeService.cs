@@ -6,7 +6,8 @@ namespace HRM_Backend.Service
 {
     public interface IEmployeeService
     {
-        Task<IEnumerable<EmployeeDTO>> GetAllAsync();
+        Task<IEnumerable<Employee>> GetAllAsync();
+        Task<IEnumerable<EmployeeDTO>> GetAllActiveAsync();
         Task<Employee> GetByIdAsync(int id);
         Task AddAsync(Employee obj);
         Task UpdateAsync(int id, Employee obj);
@@ -16,16 +17,32 @@ namespace HRM_Backend.Service
     public class EmployeeService : IEmployeeService
     {
         private readonly IRepository<Employee> _employeeRepository;
-        public EmployeeService(IRepository<Employee> employeeRepository)
+        private readonly IRepository<Payroll> _payrollRepository;
+        public EmployeeService(IRepository<Employee> employeeRepository, IRepository<Payroll> payrollRepository)
         {
             _employeeRepository = employeeRepository;
+            _payrollRepository = payrollRepository;
         }
-
-        public async Task<IEnumerable<EmployeeDTO>> GetAllAsync()
+        public async Task<IEnumerable<Employee>> GetAllAsync()
         {
             try
             {
                 var list = await _employeeRepository.GetAllAsync();
+
+                return list.OrderByDescending(x=>x.Id);
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to retrieve employee list.", ex);
+            }
+        }
+
+        public async Task<IEnumerable<EmployeeDTO>> GetAllActiveAsync()
+        {
+            try
+            {
+                var list = (await _employeeRepository.GetAllAsync()).Where(x=>x.EmploymentStatus == "Active");
 
                 return list
                     .OrderByDescending(x => x.Id)
@@ -88,16 +105,32 @@ namespace HRM_Backend.Service
             {
                 var employee = await _employeeRepository.GetByIdAsync(id);
 
+                var payrolls = await _payrollRepository.GetAllAsync();
+
+                bool isPresentInPayroll = payrolls.Any(x => x.EmployeeId == employee.Id);
+
+                if (isPresentInPayroll)
+                {
+                    throw new InvalidOperationException(
+                        $"This employee is already used in Payroll, it cannot be updated."
+                    );
+                }
+
                 if (employee == null)
                     throw new KeyNotFoundException($"Employee with ID {model.Id} not found.");
 
                 employee.Name = model.Name;
                 employee.Email = model.Email;
                 employee.Phone = model.Phone;
+                employee.Department = model.Department;
                 employee.AccountNumber = model.AccountNumber;
                 employee.EmploymentStatus = model.EmploymentStatus;
 
                 await _employeeRepository.UpdateAsync(employee);
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
             }
             catch (KeyNotFoundException)
             {
@@ -113,12 +146,28 @@ namespace HRM_Backend.Service
         {
             try
             {
+
                 var employee = await _employeeRepository.GetByIdAsync(id);
+
+                var payrolls = await _payrollRepository.GetAllAsync();
+
+                bool isPresentInPayroll = payrolls.Any(x => x.EmployeeId == employee.Id);
+
+                if (isPresentInPayroll)
+                {
+                    throw new InvalidOperationException(
+                        $"This employee is already used in Payroll, it cannot be deleted."
+                    );
+                }
 
                 if (employee == null)
                     throw new KeyNotFoundException($"Employee with ID {id} not found.");
 
                 await _employeeRepository.DeleteAsync(id);
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
             }
             catch (KeyNotFoundException)
             {

@@ -16,67 +16,137 @@ namespace HRM_Backend.Controllers
             _salaryService = salaryService;
         }
 
-
+        [Authorize]
         [HttpGet("GetAllSalaries")]
         public async Task<IActionResult> GetAllSalaries()
         {
-            var list = await _salaryService.GetAllAsync();
+            try
+            {
+                var list = await _salaryService.GetAllAsync();
 
-            return Ok(list);
+                return Ok(new
+                {
+                    success = true,
+                    data = list
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
+
 
         [Authorize]
         [HttpGet("GetSalaryById/{id}")]
         public async Task<IActionResult> GetSalaryById(int id)
         {
-            var salary = await _salaryService.GetByIdAsync(id);
+            try
+            {
+                var salary = await _salaryService.GetByIdAsync(id);
+                return Ok(new
+                {
+                    success = true,
+                    data = salary
 
-            return Ok(salary);
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
-        [Authorize]
+        [Authorize(Roles = "HR,Finance")]
         [HttpPost("AddSalary")]
         public async Task<IActionResult> AddSalary(Salary salary)
         {
-            await _salaryService.AddAsync(salary);
-
-            return Ok(new
+            try
             {
-                Message = "Salary created successfully."
-            });
+                await _salaryService.AddAsync(salary);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Salary created successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
-        [Authorize]
+        [Authorize(Roles = "HR,Finance")]
         [HttpPut("UpdateSalary/{id}")]
         public async Task<IActionResult> UpdateSalary(int id,Salary salary)
         {
-            await _salaryService.UpdateAsync(id, salary);
-
-            return Ok(new
+            try
             {
-                Message = "Salary updated successfully."
-            });
+                await _salaryService.UpdateAsync(id, salary);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Salary updated successfully."
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+
         }
 
-        [Authorize]
+        [Authorize(Roles = "HR,Finance")]
         [HttpDelete("DeleteSalary/{id}")]
         public async Task<IActionResult> DeleteSalary(int id)
         {
-            await _salaryService.DeleteAsync(id);
-
-            return Ok(new
+            try
             {
-                Message = "Salary deleted successfully."
-            });
+                await _salaryService.DeleteAsync(id);
+
+                return Ok(new
+                {
+                    success = true, message = "Salary deleted successfully." 
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new {success = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new {success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
         [Authorize]
         [HttpGet("GetUpdatedSalaryList")]
         public async Task<IActionResult> GetUpdatedSalaryList()
         {
-            var list = await _salaryService.GetUpdatedSalaryListAsync();
+            try
+            {
+                var list = await _salaryService.GetUpdatedSalaryListAsync();
 
-            return Ok(list);
+                return Ok(new
+                {
+                    success = true,
+                    data = list
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
     }
 }

@@ -16,58 +16,143 @@ namespace HRM_Backend.Controllers
             _employeeService = employeeService;
         }
 
-
+        [Authorize]
         [HttpGet("GetAllEmployees")]
         public async Task<IActionResult> GetAllEmployees()
         {
-            var list = await _employeeService.GetAllAsync();
+            try
+            {
+                var list = await _employeeService.GetAllAsync();
 
-            return Ok(list);
+                return Ok(new
+                {
+                    success = true,
+                    data = list,
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("GetAllActiveEmployees")]
+        public async Task<IActionResult> GetAllActiveEmployees()
+        {
+            try
+            {
+                var list = await _employeeService.GetAllActiveAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = list,
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+
         }
 
         [Authorize]
         [HttpGet("GetEmployeeById/{id}")]
         public async Task<IActionResult> GetEmployeeById(int id)
         {
-            var employee = await _employeeService.GetByIdAsync(id);
+            try
+            {
+                var employee = await _employeeService.GetByIdAsync(id);
 
-            return Ok(employee);
+                return Ok(new 
+                {
+                    success = true,
+                    data = employee,
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound( new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
-        [Authorize(Roles = "HR")]
+        [Authorize(Roles = "Admin,HR")]
         [HttpPost("AddEmployee")]
         public async Task<IActionResult> AddEmployee(Employee employee)
         {
-            await _employeeService.AddAsync(employee);
-
-            return Ok(new
+            try
             {
-                Message = "Employee created successfully."
-            });
+                await _employeeService.AddAsync(employee);
+
+                return Ok(new
+                {
+                    Message = "Employee created successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
-        [Authorize(Roles = "HR")]
+        [Authorize(Roles = "Admin,HR")]
         [HttpPut("UpdateEmployee/{id}")]
-        public async Task<IActionResult> UpdateEmployee(int id,Employee employee)
+        public async Task<IActionResult> UpdateEmployee(int id, Employee employee)
         {
-            await _employeeService.UpdateAsync(id, employee);
-
-            return Ok(new
+            try
             {
-                Message = "Employee updated successfully."
-            });
+                await _employeeService.UpdateAsync(id, employee);
+
+                return Ok(new
+                {
+                    success = false,
+                    message = "Employee updated successfully."
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin,HR")]
         [HttpDelete("DeleteEmployee/{id}")]
         public async Task<IActionResult> DeleteEmployee(int id)
         {
-            await _employeeService.DeleteAsync(id);
-
-            return Ok(new
+            try
             {
-                Message = "Employee deleted successfully."
-            });
+                await _employeeService.DeleteAsync(id);
+
+                return Ok(new
+                {
+                    message = "Employee deleted successfully."
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
     }
 }

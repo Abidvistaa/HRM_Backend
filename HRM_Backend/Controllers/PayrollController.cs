@@ -20,94 +20,97 @@ namespace HRM_Backend.Controllers
         [HttpGet("GetAllPayrolls")]
         public async Task<IActionResult> GetAllPayrolls()
         {
-            var list = await _payrollService.GetAllDTOAsync();
+            try
+            {
+                var list = await _payrollService.GetAllDTOAsync();
 
-            return Ok(list);
+                return Ok( new 
+                { 
+                    success = true,
+                    data = list 
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new {success = false, message = ex.Message });
+            }
         }
 
         [Authorize]
         [HttpGet("GetPayrollById/{id}")]
         public async Task<IActionResult> GetPayrollById(int id)
         {
-            var payroll = await _payrollService.GetByIdDTOAsync(id);
-
-            return Ok(payroll);
-        }
-
-
-        [Authorize(Roles = "HR")]
-        [HttpPost("AddPayroll")]
-        public async Task<IActionResult> AddPayroll(Payroll payroll)
-        {
-            var existing = (await _payrollService.GetAllAsync())
-                .FirstOrDefault(x =>
-                    x.EmployeeId == payroll.EmployeeId &&
-                    x.PayrollMonth == payroll.PayrollMonth &&
-                    x.PayrollYear == payroll.PayrollYear);
-
-            if (existing != null)
+            try
             {
+                var payroll = await _payrollService.GetByIdAsync(id);
+
                 return Ok(new
-                {
-                    Success = false,
-                    Message = "Payroll already exists for this month."
+{
+                    success = false,
+                    data = payroll
                 });
             }
-
-            await _payrollService.AddAsync(payroll);
-
-            return Ok(new
+            catch (KeyNotFoundException ex)
             {
-                Success = true,
-                Message = "Payroll created successfully."
-            });
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
+
 
         [Authorize(Roles = "HR")]
-        [HttpPut("UpdatePayroll/{id}")]
-        public async Task<IActionResult> UpdatePayroll(int id,Payroll payroll)
-        {
-            await _payrollService.UpdateAsync(id, payroll);
-
-            return Ok(new
-            {
-                Message = "Payroll updated successfully."
-            });
-        }
-
-        [Authorize]
-        [HttpDelete("DeletePayroll/{id}")]
-        public async Task<IActionResult> DeletePayroll(int id)
-        {
-            await _payrollService.DeleteAsync(id);
-
-            return Ok(new
-            {
-                Message = "Payroll deleted successfully."
-            });
-        }
-
         [HttpPost("AutoGeneratePayrollMonthly")]
         public async Task<IActionResult> AutoGeneratePayrollMonthly(Payroll payroll)
         {
-            int generatedCount = await _payrollService.GenerateMonthlyPayrollAsync(payroll);
-            
-            if(generatedCount == 0)
+            try
             {
+                int generatedCount = await _payrollService.GenerateMonthlyPayrollAsync(payroll);
+
+                var month = new DateTime(1, payroll.PayrollMonth, 1).ToString("MMM");
+
+                if (generatedCount == 0)
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = $"Already generated payrolls for {month}, {payroll.PayrollYear}."
+                    });
+                }
+
                 return Ok(new
                 {
-                    Success = false,
-                    Message = $"{generatedCount} payrolls. So, no payroll has been generated.",
-                    GeneratedCount = generatedCount
+                    success = true,
+                    message = $"{generatedCount} payrolls generated successfully."
                 });
             }
-
-            return Ok(new
+            catch (Exception ex)
             {
-                Success = true,
-                Message = $"{generatedCount} payrolls generated successfully.",
-                GeneratedCount = generatedCount
-            });
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [Authorize(Roles = "HR")]
+        [HttpDelete("DeletePayroll/{id}")]
+        public async Task<IActionResult> DeletePayroll(int id)
+        {
+            try
+            {
+                await _payrollService.DeleteAsync(id);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Payroll deleted successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+
         }
     }
 }

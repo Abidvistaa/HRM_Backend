@@ -6,6 +6,8 @@ namespace HRM_Backend.Model
     {
         public int Id { get; set; }
         [Required]
+        public int SalaryId { get; set; }
+        [Required]
         public int EmployeeId { get; set; }
         [Required]
         public int PayrollMonth { get; set; }

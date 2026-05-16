@@ -1,6 +1,7 @@
 ﻿using HRM_Backend.DTO;
 using HRM_Backend.Model;
 using HRM_Backend.Repository;
+using Microsoft.AspNetCore.Http.HttpResults;
 using System.Data;
 
 namespace HRM_Backend.Service
@@ -19,10 +20,12 @@ namespace HRM_Backend.Service
     {
         private readonly IRepository<Salary> _salaryRepository;
         private readonly IRepository<Employee> _employeeRepository;
-        public SalaryService(IRepository<Salary> salaryRepository, IRepository<Employee> employeeRepository)
+        private readonly IRepository<Payroll> _payrollRepository;
+        public SalaryService(IRepository<Salary> salaryRepository, IRepository<Employee> employeeRepository, IRepository<Payroll> payrollRepository)
         {
             _salaryRepository = salaryRepository;
             _employeeRepository = employeeRepository;
+            _payrollRepository = payrollRepository;
         }
 
         public async Task<IEnumerable<SalaryDTO>> GetAllAsync()
@@ -80,7 +83,6 @@ namespace HRM_Backend.Service
         {
             try
             {
-
                 await _salaryRepository.AddAsync(salary);
             }
             catch (Exception ex)
@@ -95,6 +97,18 @@ namespace HRM_Backend.Service
             {
                 var salary = await _salaryRepository.GetByIdAsync(id);
 
+                var payrolls = await _payrollRepository.GetAllAsync();
+                var employee = (await _employeeRepository.GetAllAsync()).Where(x => x.Id == salary.EmployeeId).FirstOrDefault();
+
+                bool isPresentInPayroll = payrolls.Any(x => x.EmployeeId == employee.Id);
+
+                if (isPresentInPayroll)
+                {
+                    throw new InvalidOperationException(
+                        $"This salary is already used in Payroll, it cannot be updated."
+                    );
+                }
+
                 if (salary == null)
                     throw new KeyNotFoundException($"Salary with ID {model.Id} not found.");
 
@@ -103,6 +117,10 @@ namespace HRM_Backend.Service
 
 
                 await _salaryRepository.UpdateAsync(salary);
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
             }
             catch (KeyNotFoundException)
             {
@@ -118,12 +136,29 @@ namespace HRM_Backend.Service
         {
             try
             {
+
                 var salary = await _salaryRepository.GetByIdAsync(id);
+
+                var payrolls = await _payrollRepository.GetAllAsync();
+                var employee = (await _employeeRepository.GetAllAsync()).Where(x=>x.Id == salary.EmployeeId).FirstOrDefault();
+
+                bool isPresentInPayroll = payrolls.Any(x => x.EmployeeId == employee.Id);
+
+                if (isPresentInPayroll)
+                {
+                    throw new InvalidOperationException(
+                        $"This salary is already used in Payroll, it cannot be deleted."
+                    );
+                }
 
                 if (salary == null)
                     throw new KeyNotFoundException($"Salary with ID {id} not found.");
 
                 await _salaryRepository.DeleteAsync(id);
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
             }
             catch (KeyNotFoundException)
             {

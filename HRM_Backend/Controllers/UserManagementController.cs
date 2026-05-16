@@ -56,6 +56,14 @@ namespace HRM_Backend.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login(Login user)
         {
+            try
+            {
+
+            }
+            catch (Exception ex) 
+            {
+
+            }
             bool Success = false;
 
             var objAdmin = (await _userService.GetAllAsync()).Where(x => x.UserName == user.UserName && x.Password == user.Password).FirstOrDefault();
@@ -103,7 +111,7 @@ namespace HRM_Backend.Controllers
             }
         }
 
-        
+        [Authorize]
         [HttpGet("GetAllRoles")]
         public async Task<IActionResult> GetAllRoles()
         {
@@ -125,54 +133,113 @@ namespace HRM_Backend.Controllers
         [HttpGet("GetAllUsersWithRoles")]
         public async Task<IActionResult> GetAllUsersWithRoles()
         {
-            var list = await _userService.GetUsersWithRolesAsync();
+            try
+            {
+                var list = await _userService.GetUsersWithRolesAsync();
 
-            return Ok(list);
+                return Ok(new
+                {
+                    success = true,
+                    data = list,
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
         [Authorize]
         [HttpGet("GetUserById/{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
-            var list = await _userService.GetByIdAsync(id);
+            try
+            {
+                var obj = await _userService.GetByIdAsync(id);
 
-            return Ok(list);
+                return Ok(new
+                {
+                    success = true,
+                    data = obj,
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound( new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpPost("AddUser")]
         public async Task<IActionResult> AddUser(User obj)
         {
-            await _userService.AddAsync(obj);
-
-            return Ok(new
+            try
             {
-                Message = "User created successfully."
-            });
+                await _userService.AddAsync(obj);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "User created successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPut("UpdateUser")]
         public async Task<IActionResult> UpdateUser(User obj)
         {
-            await _userService.UpdateAsync(obj);
-
-            return Ok(new
+            try
             {
-                Message = "User updated successfully."
-            });
+                await _userService.UpdateAsync(obj);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "User updated successfully."
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("DeleteUser/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            await _userService.DeleteAsync(id);
-
-            return Ok(new
+            try
             {
-                Message = "User deleted successfully."
-            });
+                await _userService.DeleteAsync(id);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "User deleted successfully."
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
     }
 }
