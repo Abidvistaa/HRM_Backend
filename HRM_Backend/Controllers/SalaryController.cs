@@ -1,6 +1,7 @@
 ﻿using HRM_Backend.Model;
 using HRM_Backend.Service;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HRM_Backend.Controllers
@@ -70,6 +71,10 @@ namespace HRM_Backend.Controllers
                     success = true,
                     message = "Salary created successfully."
                 });
+            }
+            catch(InvalidOperationException ex)
+            {
+                return NotFound( new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {

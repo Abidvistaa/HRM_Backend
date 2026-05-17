@@ -3,6 +3,7 @@ using HRM_Backend.Model;
 using HRM_Backend.Repository;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Data;
+using System.Globalization;
 
 namespace HRM_Backend.Service
 {
@@ -83,7 +84,27 @@ namespace HRM_Backend.Service
         {
             try
             {
+                var payrolls = await _payrollRepository.GetAllAsync();
+               
+                int salaryMonth = salary.EffectiveDate.Month;
+                int salaryYear = salary.EffectiveDate.Year;
+
+                bool isPresentDateInPayroll = payrolls.Any(x => x.EmployeeId == salary.EmployeeId && x.PayrollMonth ==salaryMonth && x.PayrollYear == salaryYear);
+
+                if (isPresentDateInPayroll)
+                {
+                    string monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(salaryMonth);
+
+                    throw new InvalidOperationException(
+                        $"This month's ({monthName}) salary is already in payroll."
+                    );
+                }
+
                 await _salaryRepository.AddAsync(salary);
+            }
+            catch(InvalidOperationException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
