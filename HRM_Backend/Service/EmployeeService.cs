@@ -109,24 +109,6 @@ namespace HRM_Backend.Service
                 var salaries = await _salaryRepository.GetAllAsync();
                 var payrolls = await _payrollRepository.GetAllAsync();
 
-                bool isPresentInSalary = salaries.Any(x => x.EmployeeId == employee.Id);
-
-                bool isPresentInPayroll = payrolls.Any(x => x.EmployeeId == employee.Id);
-
-                if (isPresentInSalary)
-                {
-                    throw new InvalidOperationException(
-                        $"This employee is already used in Salaries, it cannot be modified."
-                    );
-                }
-
-                if (isPresentInPayroll)
-                {
-                    throw new InvalidOperationException(
-                        $"This employee is already used in Payroll, it cannot be modified."
-                    );
-                }
-
                 if (employee == null)
                     throw new KeyNotFoundException($"Employee with ID {model.Id} not found.");
 

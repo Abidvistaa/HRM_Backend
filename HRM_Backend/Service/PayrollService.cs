@@ -112,8 +112,15 @@ namespace HRM_Backend.Service
                 var salaries = await _salaryRepository.GetAllAsync();
                 var payrolls = await _payrollRepository.GetAllAsync();
 
+                var payrollDate = new DateTime(
+                    model.PayrollYear,
+                    model.PayrollMonth,
+                    1
+                );
+
                 // latest salary
                 var latestSalaries = salaries
+                    .Where(x => x.EffectiveDate <= payrollDate) // only salary effective before or on payroll month
                     .GroupBy(x => x.EmployeeId)
                     .Select(g => g.OrderByDescending(x => x.EffectiveDate).FirstOrDefault());
 

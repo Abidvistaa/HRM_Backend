@@ -114,10 +114,6 @@ namespace HRM_Backend.Controllers
                     message = "Employee updated successfully."
                 });
             }
-            catch (InvalidOperationException ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { success = false, message = ex.Message });
