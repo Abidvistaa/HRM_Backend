@@ -8,6 +8,8 @@ namespace HRM_Backend.DTO
         public string IdPlusName { get; set; } = string.Empty;
         public string EmployeeName { get; set; } = string.Empty;
         public decimal BasicSalary { get; set; }
+        public decimal Bonus { get; set; }
+        public decimal Deduction { get; set; }
         public DateTime EffectiveDate { get; set; }
     }
 }

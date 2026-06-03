@@ -46,6 +46,8 @@ namespace HRM_Backend.Service
                          EmployeeId = obj.EmployeeId,
                          EmployeeName = employee?.Name ?? "",
                          BasicSalary = obj.BasicSalary,
+                         Bonus = obj.Bonus,
+                         Deduction = obj.Deduction,
                          EffectiveDate = obj.EffectiveDate
                      };
 
@@ -212,6 +214,7 @@ namespace HRM_Backend.Service
                         IdPlusName = employee.Id + " - " + employee.Name,
                         EmployeeName = employee?.Name ?? "",
                         BasicSalary = obj.BasicSalary,
+                        Bonus = obj.Bonus,
                         EffectiveDate = obj.EffectiveDate
                     };
                 });

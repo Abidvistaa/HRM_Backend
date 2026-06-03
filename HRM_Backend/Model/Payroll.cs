@@ -13,8 +13,6 @@ namespace HRM_Backend.Model
         public int PayrollMonth { get; set; }
         [Required]
         public int PayrollYear { get; set; }
-        public decimal Bonus { get; set; }
-        public decimal Deduction { get; set; }
         [Required]
         public decimal Tax { get; set; }
         [Required]

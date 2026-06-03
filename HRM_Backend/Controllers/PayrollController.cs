@@ -69,22 +69,15 @@ namespace HRM_Backend.Controllers
             {
                 int generatedCount = await _payrollService.GenerateMonthlyPayrollAsync(payroll);
 
-                var month = new DateTime(1, payroll.PayrollMonth, 1).ToString("MMM");
-
-                if (generatedCount == 0)
-                {
-                    return Ok(new
-                    {
-                        success = false,
-                        message = $"Already generated payrolls for {month}, {payroll.PayrollYear}."
-                    });
-                }
-
                 return Ok(new
                 {
                     success = true,
                     message = $"{generatedCount} payrolls generated successfully."
                 });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {

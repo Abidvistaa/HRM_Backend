@@ -70,12 +70,7 @@ namespace HRM_Backend.Service
                 {
                     var employee = employees.FirstOrDefault(x => x.Id == obj.EmployeeId);
 
-                    var salary = salaries
-                        .Where(x => x.EmployeeId == obj.EmployeeId)
-                        .OrderByDescending(x => x.EffectiveDate)
-                        .FirstOrDefault();
-
-                    var specificBasicSal = salaries.Where(x => x.Id == obj.SalaryId).FirstOrDefault();
+                    var specificSal = salaries.Where(x => x.Id == obj.SalaryId).FirstOrDefault();
 
                     return new PayrollDTO
                     {
@@ -86,9 +81,9 @@ namespace HRM_Backend.Service
                         PayrollMonthString = new DateTime(1, obj.PayrollMonth, 1).ToString("MMM"),
                         PayrollMonth = obj.PayrollMonth,
                         PayrollYear = obj.PayrollYear,
-                        BasicSalary = specificBasicSal.BasicSalary,
-                        Bonus = obj.Bonus,
-                        Deduction = obj.Deduction,
+                        BasicSalary = specificSal.BasicSalary,
+                        Bonus = specificSal.Bonus,
+                        Deduction = specificSal.Deduction,
                         Tax = obj.Tax,
                         NetSalary = obj.NetSalary,
                         Status = obj.Status,
@@ -96,7 +91,7 @@ namespace HRM_Backend.Service
                     };
                 });
 
-                return list.OrderByDescending(x => x.ActionDate);
+                return list.OrderByDescending(x => x.PayrollMonth);
             }
             catch (Exception ex)
             {
@@ -142,7 +137,7 @@ namespace HRM_Backend.Service
                     decimal basicSalary = obj.BasicSalary;
 
                     // gross salary
-                    decimal grossSalary = basicSalary + model.Bonus - model.Deduction;
+                    decimal grossSalary = basicSalary + obj.Bonus - obj.Deduction;
 
                     // tax from rule
                     decimal taxAmount = CalculateTax(grossSalary);
@@ -156,8 +151,6 @@ namespace HRM_Backend.Service
                         EmployeeId = employee.Id,
                         PayrollMonth = model.PayrollMonth,
                         PayrollYear = model.PayrollYear,
-                        Bonus = model.Bonus,
-                        Deduction = model.Deduction,
                         Tax = taxAmount,
                         NetSalary = netSalary,
                         Status = "Generated",
@@ -169,7 +162,18 @@ namespace HRM_Backend.Service
                     generatedCount++;
                 }
 
+                var month = new DateTime(1, model.PayrollMonth, 1).ToString("MMM");
+                if (generatedCount == 0)
+                {
+                    throw new InvalidOperationException($"Already generated payrolls for {month}, {model.PayrollYear}.");
+                }
+
                 return generatedCount;
+            }
+
+            catch (InvalidOperationException)
+            {
+                throw;
             }
             catch (Exception ex)
             {

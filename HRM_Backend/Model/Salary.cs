@@ -10,6 +10,8 @@ namespace HRM_Backend.Model
         [Required]
         public decimal BasicSalary { get; set; }
         [Required]
+        public decimal Bonus { get; set; }
+        public decimal Deduction { get; set; }
         public DateTime EffectiveDate { get; set; }
 
     }
