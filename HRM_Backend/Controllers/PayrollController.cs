@@ -105,5 +105,36 @@ namespace HRM_Backend.Controllers
             }
 
         }
+
+        [Authorize(Roles = "HR")]
+        [HttpGet("ExportPayrollPdf")]
+        public async Task<IActionResult> ExportPayrollPdf()
+        {
+            try
+            {
+                var pdf = await _payrollService.ExportPayrollPdfAsync();
+
+                return File(
+                    pdf,
+                    "application/pdf",
+                    $"Payroll-List_{DateTime.Now:dd MMM yyyy}.pdf");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
     }
 }

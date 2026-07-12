@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.AddCors(options =>
             .WithOrigins("http://localhost:4200")
             .AllowAnyHeader()
             .AllowAnyMethod()
+            .WithExposedHeaders("Content-Disposition")
     );
 });
 
@@ -127,6 +129,8 @@ app.UseSwaggerUI(c =>
 });
 
 
+// Configure QuestPDF license
+QuestPDF.Settings.License = LicenseType.Community;
 
 // URLs 
 app.Urls.Add("http://localhost:5000");
