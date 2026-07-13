@@ -18,7 +18,7 @@ builder.Services.AddCors(options =>
             .WithOrigins("http://localhost:4200")
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .WithExposedHeaders("Content-Disposition")
+            .WithExposedHeaders("Content-Disposition")//Assuring exact pdf file naming from backend
     );
 });
 
@@ -104,6 +104,7 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<ISalaryService, SalaryService>();
 builder.Services.AddScoped<IPayrollService, PayrollService>();
+builder.Services.AddScoped<IMailService, MailService>();
 
 var app = builder.Build();
 

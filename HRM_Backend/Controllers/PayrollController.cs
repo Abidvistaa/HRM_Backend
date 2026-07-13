@@ -10,10 +10,11 @@ namespace HRM_Backend.Controllers
     public class PayrollController : ControllerBase
     {
         private readonly IPayrollService _payrollService;
-
-        public PayrollController(IPayrollService payrollService)
+        private readonly IMailService _mailService;
+        public PayrollController(IPayrollService payrollService, IMailService mailService)
         {
             _payrollService = payrollService;
+            _mailService = mailService;
         }
 
 
@@ -121,19 +122,36 @@ namespace HRM_Backend.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new
-                {
-                    success = false,
-                    message = ex.Message
-                });
+                return NotFound(new { success = false, message = ex.Message });
+
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [Authorize(Roles = "HR")]
+        [HttpPost("SendPayrollMail")]
+        public async Task<IActionResult> SendPayrollMail()
+        {
+            try
+            {
+                await _mailService.SendPayrollMailAsync();
+
+                return Ok(new
                 {
-                    success = false,
-                    message = ex.Message
+                    success = true,
+                    message = "Payroll mail sent successfully."
                 });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message});
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
     }

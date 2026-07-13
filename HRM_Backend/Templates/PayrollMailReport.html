@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .main-table {
+            width: 100%;
+            background: #f4f4f4;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            margin: 0;
+            color: #1976d2;
+            text-align: center;
+        }
+
+        .info {
+            margin: 20px 0;
+            font-size: 14px;
+        }
+
+        table.report {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+            table.report th {
+                background: #1976d2;
+                color: white;
+                border: 1px solid #dddddd;
+                padding: 5px;
+                font-size: 11px;
+            }
+
+            table.report td {
+                border: 1px solid #dddddd;
+                padding: 5px;
+                font-size: 10px;
+                word-break: break-word;
+                overflow-wrap: break-word;
+                text-align: center;
+            }
+
+            table.report tr:nth-child(even) {
+                background: #f7f7f7;
+            }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+
+        @media only screen and (max-width:600px) {
+            .container {
+                padding: 10px !important;
+            }
+
+            h2 {
+                font-size: 18px !important;
+            }
+
+            .info {
+                font-size: 12px !important;
+            }
+
+            table.report th,
+            table.report td {
+                font-size: 7px !important;
+                padding: 2px !important;
+            }
+
+            .footer {
+                font-size: 10px !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <table class="main-table" cellpadding="20" cellspacing="0" border="0">
+        <tr>
+            <td align="center">
+                <table class="container" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td>
+                            <h2>Payroll Report</h2>
+
+                            <div class="info">
+                                <strong>Total Payroll :</strong> {{TotalPayroll}}<br><br>
+                                <strong>Generated :</strong> {{GeneratedDate}}
+                            </div>
+
+                            <table class="report">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Salary ID</th>
+                                        <th>Employee</th>
+                                        <th>Month</th>
+                                        <th>Year</th>
+                                        <th>Basic</th>
+                                        <th>Bonus</th>
+                                        <th>Deduction</th>
+                                        <th>Tax</th>
+                                        <th>Net Salary</th>
+                                        <th>Status</th>
+                                        <th>Action Date</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {{PayrollRows}}
+                                </tbody>
+                            </table>
+
+                            <div class="footer">
+                                This is an automatically generated payroll report.
+                                <br><br>
+                                Please find the attached PDF for the complete printable report.
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
