@@ -104,6 +104,8 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<ISalaryService, SalaryService>();
 builder.Services.AddScoped<IPayrollService, PayrollService>();
+builder.Services.AddScoped<IPdfService, PdfService>();
+builder.Services.AddScoped<IExcelService, ExcelService>();
 builder.Services.AddScoped<IMailService, MailService>();
 
 var app = builder.Build();

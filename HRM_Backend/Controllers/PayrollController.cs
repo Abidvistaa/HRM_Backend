@@ -10,10 +10,14 @@ namespace HRM_Backend.Controllers
     public class PayrollController : ControllerBase
     {
         private readonly IPayrollService _payrollService;
+        private readonly IPdfService _pdfService;
+        private readonly IExcelService _excelService;
         private readonly IMailService _mailService;
-        public PayrollController(IPayrollService payrollService, IMailService mailService)
+        public PayrollController(IPayrollService payrollService, IPdfService pdfService, IExcelService excelService, IMailService mailService )
         {
             _payrollService = payrollService;
+            _pdfService = pdfService;
+            _excelService = excelService;
             _mailService = mailService;
         }
 
@@ -113,7 +117,7 @@ namespace HRM_Backend.Controllers
         {
             try
             {
-                var pdf = await _payrollService.ExportPayrollPdfAsync();
+                var pdf = await _pdfService.ExportPayrollPdfAsync();
 
                 return File(
                     pdf,
@@ -131,7 +135,18 @@ namespace HRM_Backend.Controllers
             }
         }
 
-        [Authorize(Roles = "HR")]
+        [HttpGet("ExportPayrollExcel")]
+        public async Task<IActionResult> ExportPayrollExcel()
+        {
+            var file = await _excelService.ExportPayrollExcelAsync();
+
+            return File(
+                file,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"Payroll_List_{DateTime.Now:dd MMM yyyy}.xlsx");
+        }
+
+
         [HttpPost("SendPayrollMail")]
         public async Task<IActionResult> SendPayrollMail()
         {

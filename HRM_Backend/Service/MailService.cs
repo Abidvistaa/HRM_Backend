@@ -13,12 +13,19 @@ namespace HRM_Backend.Service
     public class MailService : IMailService
     {
         private readonly IPayrollService _payrollService;
+        private readonly IPdfService _pdfService;
+        private readonly IExcelService _excelService;
         private readonly IConfiguration _configuration;
 
-        public MailService(IPayrollService payrollService,
-                           IConfiguration configuration)
+        public MailService(
+            IPayrollService payrollService,
+            IPdfService pdfService,
+            IExcelService excelService,
+            IConfiguration configuration)
         {
             _payrollService = payrollService;
+            _pdfService = pdfService;
+            _excelService = excelService;
             _configuration = configuration;
         }
 
@@ -64,7 +71,7 @@ namespace HRM_Backend.Service
                 // Create Mail
                 MailMessage mail = new MailMessage();
 
-                mail.From = new MailAddress(_configuration["MailSettings:From"]);
+                mail.From = new MailAddress(_configuration["MailSettings:From"], "Intelligence Academy");
 
                 mail.To.Add("mahassan22300@gmail.com");
 
@@ -75,12 +82,20 @@ namespace HRM_Backend.Service
                 mail.Body = html;
 
                 // Attach PDF
-                byte[] pdf = await _payrollService.ExportPayrollPdfAsync();
+                byte[] pdf = await _pdfService.ExportPayrollPdfAsync();
 
                 mail.Attachments.Add(new Attachment(
                     new MemoryStream(pdf),
                     $"Payroll_List_{DateTime.Now:yyyyMMdd}.pdf",
                     "application/pdf"));
+
+                //Attach Excel
+                byte[] excel = await _excelService.ExportPayrollExcelAsync();
+
+                mail.Attachments.Add(new Attachment(
+                    new MemoryStream(excel),
+                    $"Payroll_List_{DateTime.Now:yyyyMMdd}.xlsx",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
 
                 // SMTP
                 using SmtpClient smtp = new SmtpClient(
