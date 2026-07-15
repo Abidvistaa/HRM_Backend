@@ -10,10 +10,12 @@ namespace HRM_Backend.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
+        private readonly IBarcodeService _barcodeService;
 
-        public EmployeeController(IEmployeeService employeeService)
+        public EmployeeController(IEmployeeService employeeService, IBarcodeService barcodeService)
         {
             _employeeService = employeeService;
+            _barcodeService = barcodeService;
         }
 
         [Authorize]
@@ -140,6 +142,36 @@ namespace HRM_Backend.Controllers
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("GetEmployeeBarcode/{id}")]
+        public async Task<IActionResult> GetEmployeeBarcode(int id)
+        {
+            try
+            {
+                var barcode = await _barcodeService.GenerateEmployeeBarcode(id);
+
+                return File(
+                    barcode,
+                    "image/png",
+                    $"Employee_Barcode_EMP000{id}.png");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
             }
             catch (KeyNotFoundException ex)
             {

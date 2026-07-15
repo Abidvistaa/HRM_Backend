@@ -135,6 +135,7 @@ namespace HRM_Backend.Controllers
             }
         }
 
+        [Authorize(Roles = "HR")]
         [HttpGet("ExportPayrollExcel")]
         public async Task<IActionResult> ExportPayrollExcel()
         {
@@ -146,7 +147,7 @@ namespace HRM_Backend.Controllers
                 $"Payroll_List_{DateTime.Now:dd MMM yyyy}.xlsx");
         }
 
-
+        [Authorize(Roles = "HR")]
         [HttpPost("SendPayrollMail")]
         public async Task<IActionResult> SendPayrollMail()
         {

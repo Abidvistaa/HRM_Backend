@@ -107,6 +107,7 @@ builder.Services.AddScoped<IPayrollService, PayrollService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<IExcelService, ExcelService>();
 builder.Services.AddScoped<IMailService, MailService>();
+builder.Services.AddScoped<IBarcodeService, BarcodeService>();
 
 var app = builder.Build();
 
