@@ -182,5 +182,26 @@ namespace HRM_Backend.Controllers
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
+
+        //[Authorize]
+        [HttpGet("GetDeptEmpsForDonut")]
+        public async Task<IActionResult> GetDeptEmpsForDonut()
+        {
+            try
+            {
+                var list = await _employeeService.GetDeptEmpsAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = list,
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+
+        }
     }
 }

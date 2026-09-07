@@ -8,6 +8,7 @@ namespace HRM_Backend.Service
     {
         Task<IEnumerable<Employee>> GetAllAsync();
         Task<IEnumerable<EmployeeDTO>> GetAllActiveAsync();
+        Task<EmployeeDonutResponseDTO> GetDeptEmpsAsync();
         Task<Employee> GetByIdAsync(int id);
         Task AddAsync(Employee obj);
         Task UpdateAsync(int id, Employee obj);
@@ -66,7 +67,33 @@ namespace HRM_Backend.Service
                 throw new Exception("Failed to retrieve employee list.", ex);
             }
         }
+        public async Task<EmployeeDonutResponseDTO> GetDeptEmpsAsync()
+        {
+            try
+            {
+                var list = (await _employeeRepository.GetAllAsync()).ToList();
 
+                var departments = list
+                    .GroupBy(x => x.Department)
+                    .Select(g => new EmployeeDonutDTO
+                    {
+                        Dept = g.Key,
+                        TotalEmp = g.Count()
+                    })
+                    .OrderByDescending(x => x.TotalEmp)
+                    .ToList();
+
+                return new EmployeeDonutResponseDTO
+                {
+                    GrossTotalEmp = list.Count(),
+                    DepartmentInfo = departments
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to retrieve employee department data.", ex);
+            }
+        }
         public async Task<Employee> GetByIdAsync(int id)
         {
             try
