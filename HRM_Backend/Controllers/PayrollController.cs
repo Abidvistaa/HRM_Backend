@@ -170,5 +170,26 @@ namespace HRM_Backend.Controllers
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
+
+        //[Authorize]
+        [HttpGet("GetMonthlyAmounts")]
+        public async Task<IActionResult> GetMonthlyAmounts()
+        {
+            try
+            {
+                var list = await _payrollService.GetMonthlyAmountsAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = list,
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using HRM_Backend.DTO;
 using HRM_Backend.Model;
 using HRM_Backend.Repository;
+using System.Globalization;
 
 namespace HRM_Backend.Service
 {
@@ -11,6 +12,7 @@ namespace HRM_Backend.Service
         Task DeleteAsync(int id);
         Task<IEnumerable<PayrollDTO>> GetAllDTOAsync();
         Task<int> GenerateMonthlyPayrollAsync(Payroll obj);
+        Task<PayrollChartResponseDTO> GetMonthlyAmountsAsync();
     }
 
     public class PayrollService : IPayrollService
@@ -229,6 +231,35 @@ namespace HRM_Backend.Service
             catch (Exception ex)
             {
                 throw new Exception("An error occurred while deleting payroll.", ex);
+            }
+        }
+
+        public async Task<PayrollChartResponseDTO> GetMonthlyAmountsAsync()
+        {
+            try
+            {
+                var list = (await _payrollRepository.GetAllAsync()).ToList();
+
+                var amounts = list
+                    .GroupBy(x => x.PayrollMonth)
+                    .Select(g => new PayrollChartDTO
+                    {
+                        Month = CultureInfo.CurrentCulture.DateTimeFormat
+                    .GetAbbreviatedMonthName(g.Key),
+
+                        TotalAmount = g.Sum(x => x.NetSalary)
+                    })
+                    .ToList();
+
+                return new PayrollChartResponseDTO
+                {
+                    GrossTotalAmount = amounts.Sum(x=>x.TotalAmount),
+                    MonthlyChartInfo = amounts
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to retrieve employee department data.", ex);
             }
         }
     }
