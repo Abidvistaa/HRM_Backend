@@ -1,4 +1,5 @@
-﻿using HRM_Backend.DTO;
+﻿using DocumentFormat.OpenXml.Vml;
+using HRM_Backend.DTO;
 using HRM_Backend.Model;
 using HRM_Backend.Repository;
 using System.Globalization;
@@ -13,6 +14,7 @@ namespace HRM_Backend.Service
         Task<IEnumerable<PayrollDTO>> GetAllDTOAsync();
         Task<int> GenerateMonthlyPayrollAsync(Payroll obj);
         Task<PayrollChartResponseDTO> GetMonthlyAmountsAsync();
+        Task<PayrollPolyLineResponseDTO> GetPayrollPolyLineAsync();
     }
 
     public class PayrollService : IPayrollService
@@ -260,6 +262,57 @@ namespace HRM_Backend.Service
             catch (Exception ex)
             {
                 throw new Exception("Failed to retrieve employee department data.", ex);
+            }
+        }
+
+        public async Task<PayrollPolyLineResponseDTO> GetPayrollPolyLineAsync()
+        {
+            try
+            {
+                var today = DateTime.Today;
+
+                var currentMonth = new DateTime(
+                    today.Year,
+                    today.Month,
+                    1
+                );
+
+                var startMonth = currentMonth.AddMonths(-11);
+
+                var payrolls = (await _payrollRepository.GetAllAsync())
+                    .ToList();
+
+                var polyLine = new List<PayrollPolyLinePointDTO>();
+
+                for (int i = 0; i < 12; i++)
+                {
+                    var monthDate = startMonth.AddMonths(i);
+
+                    var amount = payrolls
+                        .Where(x =>
+                            x.PayrollYear == monthDate.Year &&
+                            x.PayrollMonth == monthDate.Month
+                        )
+                        .Sum(x => x.NetSalary);
+
+                    polyLine.Add(new PayrollPolyLinePointDTO
+                    {
+                        Month = monthDate.ToString("MMM"),
+                        Value = amount
+                    });
+                }
+
+                return new PayrollPolyLineResponseDTO
+                {
+                    PayrollPLChart = polyLine
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(
+                    "Failed to retrieve payroll PolyLine data.",
+                    ex
+                );
             }
         }
     }

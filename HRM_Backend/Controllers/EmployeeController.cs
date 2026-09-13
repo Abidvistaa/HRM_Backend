@@ -203,5 +203,29 @@ namespace HRM_Backend.Controllers
             }
 
         }
+
+        [HttpGet("GetEmployeePolyLine")]
+        public async Task<IActionResult> GetEmployeePolyLine()
+        {
+            try
+            {
+                var result =
+                    await _employeeService.GetTotalEmployeePolyLineAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
     }
 }

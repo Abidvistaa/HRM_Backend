@@ -8,11 +8,12 @@ namespace HRM_Backend.Service
     {
         Task<IEnumerable<Employee>> GetAllAsync();
         Task<IEnumerable<EmployeeDTO>> GetAllActiveAsync();
-        Task<EmployeeDonutResponseDTO> GetDeptEmpsAsync();
         Task<Employee> GetByIdAsync(int id);
         Task AddAsync(Employee obj);
         Task UpdateAsync(int id, Employee obj);
         Task DeleteAsync(int id);
+        Task<EmployeeDonutResponseDTO> GetDeptEmpsAsync();
+        Task<EmployeePolyLineResponseDTO> GetTotalEmployeePolyLineAsync();
     }
 
     public class EmployeeService : IEmployeeService
@@ -65,33 +66,6 @@ namespace HRM_Backend.Service
             catch (Exception ex)
             {
                 throw new Exception("Failed to retrieve employee list.", ex);
-            }
-        }
-        public async Task<EmployeeDonutResponseDTO> GetDeptEmpsAsync()
-        {
-            try
-            {
-                var list = (await _employeeRepository.GetAllAsync()).ToList();
-
-                var departments = list
-                    .GroupBy(x => x.Department)
-                    .Select(g => new EmployeeDonutDTO
-                    {
-                        Dept = g.Key,
-                        TotalEmp = g.Count()
-                    })
-                    .OrderByDescending(x => x.TotalEmp)
-                    .ToList();
-
-                return new EmployeeDonutResponseDTO
-                {
-                    GrossTotalEmp = list.Count(),
-                    DepartmentInfo = departments
-                };
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Failed to retrieve employee department data.", ex);
             }
         }
         public async Task<Employee> GetByIdAsync(int id)
@@ -207,7 +181,96 @@ namespace HRM_Backend.Service
                 throw new Exception("An error occurred while deleting employee.", ex);
             }
         }
+        public async Task<EmployeeDonutResponseDTO> GetDeptEmpsAsync()
+        {
+            try
+            {
+                var activeList = (await _employeeRepository.GetAllAsync()).Where(x => x.EmploymentStatus == "Active");
 
+                var list = (await _employeeRepository.GetAllAsync()).ToList();
 
+                var departments = list
+                    .GroupBy(x => x.Department)
+                    .Select(g => new EmployeeDonutDTO
+                    {
+                        Dept = g.Key,
+                        TotalEmp = g.Count()
+                    })
+                    .OrderByDescending(x => x.TotalEmp)
+                    .ToList();
+
+                return new EmployeeDonutResponseDTO
+                {
+                    GrossTotalEmp = list.Count(),
+                    ActiveTotalEmp = activeList.Count(),
+                    DepartmentInfo = departments
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to retrieve employee department data.", ex);
+            }
+        }
+        public async Task<EmployeePolyLineResponseDTO> GetTotalEmployeePolyLineAsync()
+        {
+            try
+            {
+                var today = DateTime.Today;
+
+                var currentMonth = new DateTime(
+                    today.Year,
+                    today.Month,
+                    1
+                );
+
+                var employees = (await _employeeRepository.GetAllAsync())
+                    .ToList();
+
+                var activeEmployees = employees
+                    .Where(x => x.EmploymentStatus == "Active")
+                    .ToList();
+
+                var polyLine1 = new List<EmployeeTotalPolyLinePointDTO>();
+                var polyLine2 = new List<EmployeeActivePolyLinePointDTO>();
+
+                for (int i = 11; i >= 0; i--)
+                {
+                    var monthDate = currentMonth.AddMonths(-i);
+
+                    var count1 = employees.Count(x =>
+                         x.HireDate.Month == monthDate.Month 
+                    );
+
+                    var count2 = activeEmployees.Count(x =>
+                         x.HireDate.Month == monthDate.Month
+                    );
+
+                    polyLine1.Add(new EmployeeTotalPolyLinePointDTO
+                    {
+                        Month = monthDate.ToString("MMM"),
+                        Value = count1
+                    });
+
+                    polyLine2.Add(new EmployeeActivePolyLinePointDTO
+                    {
+                        Month = monthDate.ToString("MMM"),
+                        Value = count2
+                    });
+                }
+
+                return new EmployeePolyLineResponseDTO
+                {
+                    EmpTotalPLChart = polyLine1,
+                    EmpActivePLChart = polyLine2
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(
+                    "Failed to retrieve employee PolyLine data.",
+                    ex
+                );
+            }
+        }
     }
 }
