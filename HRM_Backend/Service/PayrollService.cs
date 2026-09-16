@@ -242,27 +242,41 @@ namespace HRM_Backend.Service
             {
                 var list = (await _payrollRepository.GetAllAsync()).ToList();
 
+                // ALL YEARS - GROSS TOTAL AMOUNT
+                var grossTotalAmount =
+                    list.Sum(x => x.NetSalary);
+
+                // CURRENT YEAR - MONTHLY CHART
+                var currentYear = DateTime.Now.Year;
+
                 var amounts = list
+                    .Where(x => x.PayrollYear == currentYear)
                     .GroupBy(x => x.PayrollMonth)
                     .Select(g => new PayrollChartDTO
                     {
-                        Month = CultureInfo.CurrentCulture.DateTimeFormat
-                    .GetAbbreviatedMonthName(g.Key),
+                        Month = CultureInfo.CurrentCulture
+                            .DateTimeFormat
+                            .GetAbbreviatedMonthName(g.Key),
 
                         TotalAmount = g.Sum(x => x.NetSalary)
                     })
+                    .OrderBy(x => x.Month)
                     .ToList();
 
                 return new PayrollChartResponseDTO
                 {
-                    GrossTotalAmount = amounts.Sum(x=>x.TotalAmount),
+                    GrossTotalAmount = grossTotalAmount,
                     MonthlyChartInfo = amounts
                 };
             }
             catch (Exception ex)
             {
-                throw new Exception("Failed to retrieve employee department data.", ex);
+                throw new Exception(
+                    "Failed to retrieve payroll chart data.",
+                    ex
+                );
             }
+
         }
 
         public async Task<PayrollPolyLineResponseDTO> GetPayrollPolyLineAsync()
